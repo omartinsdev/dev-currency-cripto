@@ -1,0 +1,166 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useRef, type FormEvent, useEffect, useState } from "react";
+import { BsSearch } from "react-icons/bs";
+import { Link, useNavigate } from "react-router";
+
+import styles from "./home.module.css";
+
+interface CoinProps {
+  id: string;
+  name: string;
+  symbol: string;
+  priceUsd: string;
+  vwap24Hr: string;
+  changePercent24Hr: string;
+  rank: string;
+  supply: string;
+  maxSupply: string;
+  marketCapUsd: string;
+  volumeUsd24Hr: string;
+  explorer: string;
+  formattedPrice?: string;
+  formattedMarket?: string;
+  formattedVolume?: string;
+}
+
+interface DataProp {
+  data: CoinProps[];
+}
+
+export const Home = () => {
+  const [coins, setCoins] = useState<CoinProps[]>([]);
+  const [offset, setOffset] = useState<number>(0);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const API_KEY: string =
+    "c6e25b2278116798084e722ebdfef322397722e0647cc7c6f60002d0e99881ee";
+  const API_URL: string = `https://rest.coincap.io/v3/assets?limit=10&offset=${offset}&apiKey=${API_KEY}`;
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    getData();
+  }, [offset]);
+
+  const getData = async () => {
+    try {
+      const response = await fetch(API_URL);
+      const data: DataProp = await response.json();
+      const coinsData = data.data;
+
+      const price = Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      });
+
+      const compactPrice = Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        notation: "compact",
+      });
+
+      const newFormattedCoins = coinsData.map((coin) => {
+        const formattedCoins = {
+          ...coin,
+          formattedPrice: price.format(+coin.priceUsd),
+          formattedMarket: compactPrice.format(+coin.marketCapUsd),
+          formattedVolume: compactPrice.format(+coin.volumeUsd24Hr),
+        };
+        return formattedCoins;
+      });
+
+      const coinsList = [...coins, ...newFormattedCoins];
+
+      setCoins(coinsList);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleSubmitForm = (e: FormEvent) => {
+    e.preventDefault();
+
+    if (inputRef.current?.value === "") return;
+
+    navigate(`/detail/${inputRef.current?.value}`);
+  };
+
+  const handleGetMoreCriptos = () => {
+    if (offset === 0) return setOffset(10);
+
+    setOffset((offset) => offset + 10);
+  };
+
+  return (
+    <main className={styles.container}>
+      <form className={styles.form} onSubmit={handleSubmitForm}>
+        <input placeholder="Digite o nome da moeda..." ref={inputRef} />
+
+        <button type="submit">
+          <BsSearch size={30} color="#fff" />
+        </button>
+      </form>
+
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Moeda</th>
+            <th scope="col">Valor mercado</th>
+            <th scope="col">Preço</th>
+            <th scope="col">Volume</th>
+            <th scope="col">Mudança 24H</th>
+          </tr>
+        </thead>
+
+        <tbody id="tbody">
+          {coins.length > 0 &&
+            coins.map((coin) => (
+              <tr className={styles.tableRow} key={coin.id}>
+                <td className={styles.tdLabel} data-label="Moeda">
+                  <div className={styles.name}>
+                    <img
+                      className={styles.criptoLogo}
+                      alt="Logo cripto"
+                      src={`https://assets.coincap.io/assets/icons/${coin.symbol.toLowerCase()}@2x.png`}
+                    />
+
+                    <Link to={`/detail/${coin.id}`}>
+                      <span>{coin.name}</span> | {coin.symbol}
+                    </Link>
+                  </div>
+                </td>
+
+                <td className={styles.tdLabel} data-label="Valor mercado">
+                  {coin.formattedMarket}
+                </td>
+
+                <td className={styles.tdLabel} data-label="Preço">
+                  {coin.formattedPrice}
+                </td>
+
+                <td className={styles.tdLabel} data-label="Volume">
+                  {coin.formattedVolume}
+                </td>
+
+                <td
+                  className={
+                    Number(coin.changePercent24Hr) > 0
+                      ? styles.tdProfit
+                      : styles.tdLoss
+                  }
+                  data-label="Mudança 24H"
+                >
+                  <span>{Number(coin.changePercent24Hr).toFixed(3)}</span>
+                </td>
+              </tr>
+            ))}
+        </tbody>
+      </table>
+
+      <button className={styles.seeMoreBtn} onClick={handleGetMoreCriptos}>
+        Carregar mais
+      </button>
+    </main>
+  );
+};

@@ -1,0 +1,164 @@
+.container {
+  margin: 0 2rem;
+}
+
+.form {
+  width: 100%;
+
+  display: flex;
+  gap: 2rem;
+}
+
+.form input {
+  width: 100%;
+  border: none;
+  padding: 1.5rem;
+  border-radius: 0.4rem;
+  outline: none;
+  font-size: 1.6rem;
+}
+
+.form button {
+  background-color: transparent;
+}
+
+table {
+  border-collapse: separate;
+  border-spacing: 0 1.5rem;
+  width: 100%;
+  table-layout: fixed;
+}
+
+table caption {
+  font-size: 1.6rem;
+  margin: 0.5em 0.75em;
+}
+
+th {
+  color: var(--primary-white);
+}
+
+.tableRow {
+  background-color: var(--bg-secondary);
+}
+
+td:first-child,
+th:first-child {
+  border-radius: 0.8rem 0 0 0.8rem;
+}
+
+td:last-child,
+th:last-child {
+  border-radius: 0 0.8rem 0.8rem 0;
+}
+
+table td,
+table th {
+  padding: 1.2rem;
+  text-align: center;
+}
+
+.tdLabel {
+  color: var(--primary-white);
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.tdProfit {
+  color: var(--profit-green-color);
+  font-weight: 700;
+}
+
+.tdLoss {
+  color: var(--loss-red-color);
+  font-weight: 700;
+}
+
+.seeMoreBtn {
+  background-color: var(--primary-color);
+  padding: 1rem 2.6rem;
+  margin: 1.5rem 0;
+  border-radius: 0.8rem;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.criptoLogo {
+  width: 3rem;
+  height: 3rem;
+  transition: all 1s;
+}
+
+.criptoLogo:hover {
+  transform: rotate(360deg);
+  z-index: 99;
+}
+
+.name {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/*Responsividade*/
+@media screen and (max-width: 750px) {
+  .name img {
+    margin-left: 2rem;
+  }
+  table {
+    border: none;
+  }
+
+  table thead {
+    border: none;
+    clip: rect(0 0 0 0);
+    height: 0.1rem;
+    width: 0.1rem;
+    margin: -0.1rem;
+    padding: 0;
+    overflow: hidden;
+    position: absolute;
+  }
+
+  .tableRow {
+    border-bottom: 0.1rem solid #ddd;
+    margin-bottom: 1.5rem;
+
+    display: block;
+  }
+
+  table td {
+    border-bottom: 0.1rem solid rgba(221, 221, 221, 0.17);
+    text-align: right;
+    font-size: 1.4rem;
+
+    display: block;
+  }
+
+  table td:before {
+    content: attr(data-label);
+    float: left;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  table td:last-child {
+    border-bottom: none;
+  }
+
+  td:first-child,
+  th:first-child {
+    border-radius: 0;
+  }
+
+  td:last-child,
+  th:last-child {
+    border-radius: 0;
+  }
+
+  .tdLabel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+}

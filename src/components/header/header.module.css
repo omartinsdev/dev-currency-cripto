@@ -1,0 +1,17 @@
+/*Arquivo .module.css permite tornar o escopo do CSS mais fechado, impossibilitando conflitos de classes e estilos.*/
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 12rem;
+  max-width: 108rem;
+}
+
+.logo {
+  font-size: 4rem;
+}
+
+.logo b {
+  color: var(--primary-color);
+}
