@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useRef, type FormEvent, useEffect, useState } from "react";
 import { BsSearch } from "react-icons/bs";
 import { Link, useNavigate } from "react-router";
@@ -49,32 +48,50 @@ export const Home = () => {
       const data: DataProp = await response.json();
       const coinsData = data.data;
 
-      const price = Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      });
+      const currencyFormatter = (
+        currency: number,
+        locale: string = "en-US"
+      ) => {
+        return new Intl.NumberFormat(locale, {
+          currency: "USD",
+          style: "currency",
+        }).format(currency);
+      };
 
-      const compactPrice = Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-        notation: "compact",
-      });
+      const compactCurrencyFormatter = (
+        currency: number,
+        locale: string = "en-US"
+      ) => {
+        return new Intl.NumberFormat(locale, {
+          currency: "USD",
+          style: "currency",
+          notation: "compact",
+        }).format(currency);
+      };
 
       const newFormattedCoins = coinsData.map((coin) => {
+        const { priceUsd, marketCapUsd, volumeUsd24Hr } = coin;
+
         const formattedCoins = {
           ...coin,
-          formattedPrice: price.format(+coin.priceUsd),
-          formattedMarket: compactPrice.format(+coin.marketCapUsd),
-          formattedVolume: compactPrice.format(+coin.volumeUsd24Hr),
+          formattedPrice: currencyFormatter(Number(priceUsd)),
+          formattedMarket: compactCurrencyFormatter(Number(marketCapUsd)),
+          formattedVolume: compactCurrencyFormatter(Number(volumeUsd24Hr)),
         };
+
         return formattedCoins;
       });
 
       const coinsList = [...coins, ...newFormattedCoins];
 
       setCoins(coinsList);
-    } catch (error) {
-      console.error(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error(`Algo deu errado: ${error.message}`);
+        return;
+      }
+
+      console.error(`Erro inexperado: ${error}`);
     }
   };
 
