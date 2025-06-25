@@ -25,9 +25,15 @@ export interface CoinProps {
   formattedVolume?: string;
 }
 
-interface DataProp {
+interface ResponseData {
   data: CoinProps[];
 }
+
+interface ErrorData {
+  error: string;
+}
+
+type DataProps = ResponseData | ErrorData;
 
 export const Home = () => {
   const [coins, setCoins] = useState<CoinProps[]>([]);
@@ -44,54 +50,54 @@ export const Home = () => {
         const API_URL: string = `https://rest.coincap.io/v3/assets?limit=10&offset=${offset}&apiKey=${API_KEY}`;
 
         const response = await fetch(API_URL);
-        const data: DataProp = await response.json();
+        const data: DataProps = await response.json();
+
+        if ("error" in data) {
+          return;
+        }
+
         const coinsData = data.data;
 
-        const currencyFormatter = (
-          currency: number,
-          locale: string = "en-US"
-        ) => {
-          return new Intl.NumberFormat(locale, {
-            currency: "USD",
-            style: "currency",
-          }).format(currency);
+        const formatCurrency = (currency: number, compact = false) => {
+          if (!compact) {
+            return new Intl.NumberFormat("en-US", {
+              currency: "USD",
+              style: "currency",
+            }).format(currency);
+          } else if (compact) {
+            return new Intl.NumberFormat("en-US", {
+              currency: "USD",
+              style: "currency",
+              notation: "compact",
+            }).format(currency);
+          }
         };
 
-        const compactCurrencyFormatter = (
-          currency: number,
-          locale: string = "en-US"
-        ) => {
-          return new Intl.NumberFormat(locale, {
-            currency: "USD",
-            style: "currency",
-            notation: "compact",
-          }).format(currency);
-        };
-
-        const newFormattedCoins = coinsData.map((coin) => {
+        const formattedCoinsData = coinsData.map((coin) => {
           const { priceUsd, marketCapUsd, volumeUsd24Hr } = coin;
 
           const formattedCoins = {
             ...coin,
-            formattedPrice: currencyFormatter(Number(priceUsd)),
-            formattedMarket: compactCurrencyFormatter(Number(marketCapUsd)),
-            formattedVolume: compactCurrencyFormatter(Number(volumeUsd24Hr)),
+            formattedPrice: formatCurrency(+priceUsd),
+            formattedMarket: formatCurrency(+marketCapUsd, true),
+            formattedVolume: formatCurrency(+volumeUsd24Hr, true),
           };
 
           return formattedCoins;
         });
 
-        const coinsList = [...coins, ...newFormattedCoins];
+        const finalData = [...coins, ...formattedCoinsData];
 
-        setCoins(coinsList);
+        setCoins(finalData);
         setLoading(false);
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          console.error(`Algo deu errado: ${error.message}`);
-          return;
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          console.error(err.message);
+        } else {
+          console.error(`Erro inexperado: ${err}`);
         }
 
-        console.error(`Erro inexperado: ${error}`);
+        return;
       }
     };
 
@@ -101,15 +107,21 @@ export const Home = () => {
   const handleSubmitForm = (e: FormEvent) => {
     e.preventDefault();
 
-    const searchedValue = inputRef.current?.value?.toLowerCase();
+    const searchedCoin = inputRef.current?.value?.toLowerCase();
 
-    if (searchedValue === "") return navigate("/");
+    if (searchedCoin === "") {
+      navigate("/");
+      return;
+    }
 
-    navigate(`/detail/${searchedValue}`);
+    navigate(`/detail/${searchedCoin}`);
   };
 
   const handleGetMoreCriptos = () => {
-    if (offset === 0) return setOffset(10);
+    if (offset === 0) {
+      setOffset(10);
+      return;
+    }
 
     setOffset((offset) => offset + 10);
   };
@@ -125,7 +137,7 @@ export const Home = () => {
   return (
     <main className={styles.container}>
       <form className={styles.form} onSubmit={handleSubmitForm}>
-        <input placeholder="Digite o nome da moeda..." ref={inputRef} />
+        <input placeholder="Pesquise por uma criptomoeda" ref={inputRef} />
 
         <button type="submit">
           <BsSearch size={30} color="#fff" />

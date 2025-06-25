@@ -32,41 +32,37 @@ export const Detail = () => {
         const response = await fetch(API_URL);
         const data: DataProps = await response.json();
 
-        if ("error" in data) return navigate("/");
+        if ("error" in data) {
+          navigate("/");
+          return;
+        }
 
-        const currencyFormatter = (
-          currency: number,
-          locale: string = "en-US"
-        ) => {
-          return new Intl.NumberFormat(locale, {
-            currency: "USD",
-            style: "currency",
-          }).format(currency);
+        const coin = data.data;
+        const { priceUsd, marketCapUsd, volumeUsd24Hr } = coin;
+
+        const formatCurrency = (currency: number, compact = false) => {
+          if (!compact) {
+            return new Intl.NumberFormat("en-US", {
+              currency: "USD",
+              style: "currency",
+            }).format(currency);
+          } else if (compact) {
+            return new Intl.NumberFormat("en-US", {
+              currency: "USD",
+              style: "currency",
+              notation: "compact",
+            }).format(currency);
+          }
         };
 
-        const compactCurrencyFormatter = (
-          currency: number,
-          locale: string = "en-US"
-        ) => {
-          return new Intl.NumberFormat(locale, {
-            currency: "USD",
-            style: "currency",
-            notation: "compact",
-          }).format(currency);
-        };
-
-        const resultData = {
+        const coinData = {
           ...data.data,
-          formattedPrice: currencyFormatter(Number(data.data.priceUsd)),
-          formattedMarket: compactCurrencyFormatter(
-            Number(data.data.marketCapUsd)
-          ),
-          formattedVolume: compactCurrencyFormatter(
-            Number(data.data.volumeUsd24Hr)
-          ),
+          formattedPrice: formatCurrency(+priceUsd),
+          formattedMarket: formatCurrency(+marketCapUsd, true),
+          formattedVolume: formatCurrency(+volumeUsd24Hr, true),
         };
 
-        setCoin(resultData);
+        setCoin(coinData);
         setLoading(false);
       } catch (err: unknown) {
         if (err instanceof Error) {
