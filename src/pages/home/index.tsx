@@ -4,7 +4,10 @@ import { Link, useNavigate } from "react-router";
 
 import styles from "./home.module.css";
 
-interface CoinProps {
+export const API_KEY: string =
+  "c6e25b2278116798084e722ebdfef322397722e0647cc7c6f60002d0e99881ee";
+
+export interface CoinProps {
   id: string;
   name: string;
   symbol: string;
@@ -32,10 +35,6 @@ export const Home = () => {
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const API_KEY: string =
-    "c6e25b2278116798084e722ebdfef322397722e0647cc7c6f60002d0e99881ee";
-  const API_URL: string = `https://rest.coincap.io/v3/assets?limit=10&offset=${offset}&apiKey=${API_KEY}`;
-
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,6 +43,8 @@ export const Home = () => {
 
   const getData = async () => {
     try {
+      const API_URL: string = `https://rest.coincap.io/v3/assets?limit=10&offset=${offset}&apiKey=${API_KEY}`;
+
       const response = await fetch(API_URL);
       const data: DataProp = await response.json();
       const coinsData = data.data;

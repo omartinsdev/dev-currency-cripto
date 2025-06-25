@@ -14,7 +14,7 @@ export const appRouter = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "/detail/:cript",
+        path: "/detail/:cripto",
         element: <Detail />,
       },
       {
