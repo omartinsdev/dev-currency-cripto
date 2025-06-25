@@ -32,76 +32,80 @@ interface DataProp {
 export const Home = () => {
   const [coins, setCoins] = useState<CoinProps[]>([]);
   const [offset, setOffset] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    getData();
-  }, [offset]);
+    const getData = async () => {
+      try {
+        const API_URL: string = `https://rest.coincap.io/v3/assets?limit=10&offset=${offset}&apiKey=${API_KEY}`;
 
-  const getData = async () => {
-    try {
-      const API_URL: string = `https://rest.coincap.io/v3/assets?limit=10&offset=${offset}&apiKey=${API_KEY}`;
+        const response = await fetch(API_URL);
+        const data: DataProp = await response.json();
+        const coinsData = data.data;
 
-      const response = await fetch(API_URL);
-      const data: DataProp = await response.json();
-      const coinsData = data.data;
-
-      const currencyFormatter = (
-        currency: number,
-        locale: string = "en-US"
-      ) => {
-        return new Intl.NumberFormat(locale, {
-          currency: "USD",
-          style: "currency",
-        }).format(currency);
-      };
-
-      const compactCurrencyFormatter = (
-        currency: number,
-        locale: string = "en-US"
-      ) => {
-        return new Intl.NumberFormat(locale, {
-          currency: "USD",
-          style: "currency",
-          notation: "compact",
-        }).format(currency);
-      };
-
-      const newFormattedCoins = coinsData.map((coin) => {
-        const { priceUsd, marketCapUsd, volumeUsd24Hr } = coin;
-
-        const formattedCoins = {
-          ...coin,
-          formattedPrice: currencyFormatter(Number(priceUsd)),
-          formattedMarket: compactCurrencyFormatter(Number(marketCapUsd)),
-          formattedVolume: compactCurrencyFormatter(Number(volumeUsd24Hr)),
+        const currencyFormatter = (
+          currency: number,
+          locale: string = "en-US"
+        ) => {
+          return new Intl.NumberFormat(locale, {
+            currency: "USD",
+            style: "currency",
+          }).format(currency);
         };
 
-        return formattedCoins;
-      });
+        const compactCurrencyFormatter = (
+          currency: number,
+          locale: string = "en-US"
+        ) => {
+          return new Intl.NumberFormat(locale, {
+            currency: "USD",
+            style: "currency",
+            notation: "compact",
+          }).format(currency);
+        };
 
-      const coinsList = [...coins, ...newFormattedCoins];
+        const newFormattedCoins = coinsData.map((coin) => {
+          const { priceUsd, marketCapUsd, volumeUsd24Hr } = coin;
 
-      setCoins(coinsList);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error(`Algo deu errado: ${error.message}`);
-        return;
+          const formattedCoins = {
+            ...coin,
+            formattedPrice: currencyFormatter(Number(priceUsd)),
+            formattedMarket: compactCurrencyFormatter(Number(marketCapUsd)),
+            formattedVolume: compactCurrencyFormatter(Number(volumeUsd24Hr)),
+          };
+
+          return formattedCoins;
+        });
+
+        const coinsList = [...coins, ...newFormattedCoins];
+
+        setCoins(coinsList);
+        setLoading(false);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.error(`Algo deu errado: ${error.message}`);
+          return;
+        }
+
+        console.error(`Erro inexperado: ${error}`);
       }
+    };
 
-      console.error(`Erro inexperado: ${error}`);
-    }
-  };
+    getData();
+  }, [offset]);
 
   const handleSubmitForm = (e: FormEvent) => {
     e.preventDefault();
 
-    if (inputRef.current?.value === "") return;
+    const searchedValue = inputRef.current?.value?.toLowerCase();
 
-    navigate(`/detail/${inputRef.current?.value}`);
+    if (searchedValue === "") return navigate("/");
+
+    navigate(`/detail/${searchedValue}`);
   };
 
   const handleGetMoreCriptos = () => {
@@ -109,6 +113,14 @@ export const Home = () => {
 
     setOffset((offset) => offset + 10);
   };
+
+  if (loading) {
+    return (
+      <div>
+        <h4 className={styles.center}>Carregando...</h4>
+      </div>
+    );
+  }
 
   return (
     <main className={styles.container}>
@@ -139,12 +151,12 @@ export const Home = () => {
                   <div className={styles.name}>
                     <img
                       className={styles.criptoLogo}
-                      alt="Logo cripto"
+                      alt="Logo criptomoeda"
                       src={`https://assets.coincap.io/assets/icons/${coin.symbol.toLowerCase()}@2x.png`}
                     />
 
                     <Link to={`/detail/${coin.id}`}>
-                      <span>{coin.name}</span> | {coin.symbol}
+                      <span>{coin.symbol}</span>
                     </Link>
                   </div>
                 </td>
